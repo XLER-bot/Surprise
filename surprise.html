@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SURPRISE X — Ultimate Edition</title>
+    <style>
+        /* --- PREMIUM CSS ARCHITECTURE --- */
+        :root {
+            --bg-dark: #050508;
+            --glass-bg: rgba(10, 10, 18, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-glow: rgba(255, 255, 255, 0.03);
+            --text-primary: #ffffff;
+            --text-secondary: #8a8a93;
+            --accent-gold: #d4af37;
+            --accent-pink: #ff4a85;
+            --accent-cyber: #00f0ff;
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            --glow-strength: 15px;
+        }
+
+        body.light-mode {
+            --bg-dark: #f4f4f9;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --glass-glow: rgba(0, 0, 0, 0.02);
+            --text-primary: #0a0a0f;
+            --text-secondary: #5a5a65;
+        }
+
+        body.no-animations * {
+            animation: none !important;
+            transition: none !important;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            font-family: var(--font-family);
+            color: var(--text-primary);
+            transition: background-color 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        #particleCanvas, #fxCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #fxCanvas { z-index: 99; }
+
+        #app {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hud-bar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .hud-item {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 8px 16px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            pointer-events: auto;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.2);
+        }
+
+        .hud-group { display: flex; gap: 10px; }
+
+        .screen {
+            position: absolute;
+            width: 90%;
+            max-width: 500px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), inset 0 1px 0 var(--glass-glow);
+            opacity: 0;
+            transform: scale(0.92) translateY(20px);
+            pointer-events: none;
+            transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 5;
+        }
+
+        .screen.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+            z-index: 15;
+        }
+
+        h1.glowing-title {
+            font-size: 2.8rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #ffffff 30%, #a5a5b0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 var(--glow-strength) rgba(255,255,255,0.1);
+            animation: pulseGlow 3s ease-in-out infinite alternate;
+            cursor: pointer;
+        }
+
+        .subtitle {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.light-mode .btn {
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #0a0a0f;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn:hover::before { left: 100%; }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        body.light-mode .btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+            border-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e6 100%);
+            color: #050508 !important;
+            border: none;
+            font-weight: 700;
+            box-shadow: 0 8px 24px rgba(255,255,255,0.1);
+        }
+
+        .grid-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-cyber), var(--accent-pink));
+            border-radius: 10px;
+            transition: width 0.1s linear;
+        }
+
+        /* --- SIDE PANELS --- */
+        .side-panel {
+            position: fixed;
+            top: 0; right: -400px; width: 360px; height: 100%;
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-left: 1px solid var(--glass-border);
+            z-index: 200;
+            padding: 40px 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            transition: right 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            box-shadow: -10px 0 40px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+        .side-panel.open { right: 0; }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 15px;
+        }
+        .close-panel { cursor: pointer; font-size: 1.5rem; color: var(--text-secondary); }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.03);
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.1); transition: .3s; border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+            background-color: white; transition: .3s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--accent-cyber); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
+        .avatar-option {
+            font-size: 1.8rem; padding: 10px; background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border); border-radius: 12px; cursor: pointer; transition: all 0.2s ease;
+        }
+        .avatar-option.selected { background: rgba(255,255,255,0.15); border-color: #fff; transform: scale(1.05); }
+        .premium-input {
+            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+            padding: 12px 16px; border-radius: 12px; color: #fff; font-size: 1rem; outline: none;
+        }
+        body.light-mode .premium-input { color: #000; background: rgba(0,0,0,0.03); }
+
+        .shop-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.03); padding: 12px 16px; border-radius: 14px;
+            border: 1px solid var(--glass-border); margin-bottom: 10px;
+        }
+        .shop-info h4 { font-size: 0.95rem; font-weight: 600; }
+        .shop-info p { font-size: 0.8rem; color: var(--text-secondary); }
+        .btn-shop-buy { width: auto; padding: 6px 14px; font-size: 0.85rem; border-radius: 8px; margin: 0; }
+
+        .toast {
+            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+            background: rgba(15, 15, 25, 0.9); border: 1px solid var(--accent-gold);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            padding: 14px 24px; border-radius: 50px; display: flex; align-items: center; gap: 12px;
+            z-index: 1000; box-shadow: 0 10px 30px rgba(212,175,55,0.2);
+            transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .toast.show { bottom: 30px; }
+
+        /* --- LEGENDARY PRANK SPECIFIC STYLES --- */
+        .giant-finger {
+            font-size: 6rem;
+            display: inline-block;
+            animation: ultraPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite alternate;
+            filter: drop-shadow(0 0 20px rgba(255, 74, 133, 0.4));
+            margin: 10px 0;
+        }
+        .prank-congrats {
+            font-size: 2.2rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #ff4a85, #ffd700, #00f0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .prank-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(214, 175, 55, 0.15);
+            border: 1px dashed var(--accent-gold);
+            padding: 8px 16px;
+            border-radius: 12px;
+            color: var(--accent-gold);
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin: 15px 0;
+        }
+        .terminal-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: left;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #00f0ff;
+            margin: 15px 0;
+            min-height: 56px;
+        }
+        .terminal-line {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 2px solid transparent;
+        }
+        .terminal-error { color: #ff4a85; font-weight: bold; }
+
+        /* --- KEYFRAMES --- */
+        @keyframes pulseGlow {
+            0% { text-shadow: 0 0 10px rgba(255,255,255,0.05); }
+            100% { text-shadow: 0 0 25px rgba(255,255,255,0.25); }
+        }
+        @keyframes ultraPop {
+            0% { transform: scale(0.9) rotate(-5deg); }
+            100% { transform: scale(1.1) rotate(5deg); }
+        }
+        .shake { animation: intenseShake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes intenseShake {
+            10%, 90% { transform: translate3d(-6px, -4px, 0) rotate(-1deg); }
+            20%, 80% { transform: translate3d(8px, 6px, 0) rotate(2deg); }
+            35%, 55%, 70% { transform: translate3d(-12px, -8px, 0) rotate(-2deg); }
+            40%, 60% { transform: translate3d(12px, 8px, 0) rotate(1deg); }
+        }
+        .flash-effect {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; z-index: 999; opacity: 0; pointer-events: none;
+        }
+        .flash-active { animation: flashAnim 0.4s ease-out; }
+        @keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+        .glitch-transition { animation: fastGlitch 0.3s steps(2) infinite; }
+        @keyframes fastGlitch {
+            0% { filter: hue-rotate(0deg) saturate(1); transform: translate(2px, 1px); }
+            50% { filter: hue-rotate(180deg) saturate(3); transform: translate(-2px, -1px); }
+            100% { filter: hue-rotate(360deg) saturate(1); transform: translate(0, 0); }
+        }
+
+        @media (max-width: 480px) {
+            h1.glowing-title { font-size: 2.2rem; }
+            .screen { padding: 30px 20px; width: 92%; }
+            .side-panel { width: 100%; right: -100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="particleCanvas"></canvas>
+    <canvas id="fxCanvas"></canvas>
+    <div id="flashOverlay" class="flash-effect"></div>
+
+    <!-- MAIN HUD BAR -->
+    <div class="hud-bar">
+        <div class="hud-group">
+            <div class="hud-item" onclick="UX.togglePanel('profilePanel')">
+                <span id="hudAvatar">👦</span>&nbsp;<span id="hudUsername">User</span>
+            </div>
+            <div class="hud-item" onclick="UX.togglePanel('shopPanel')">
+                🪙 <span id="hudCoins">100</span>
+            </div>
+        </div>
+        <div class="hud-group">
+            <div class="hud-item" onclick="UX.togglePanel('leaderboardPanel')">🏆</div>
+            <div class="hud-item" onclick="UX.togglePanel('settingsPanel')">⚙️</div>
+        </div>
+    </div>
+
+    <!-- MASTER APP CONTAINER -->
+    <div id="app">
+
+        <!-- SCREEN 1: WELCOME SCREEN -->
+        <div id="screenWelcome" class="screen active">
+            <h1 class="glowing-title" onclick="Logic.handleTitleTap()">🎁 SURPRISE X 🎁</h1>
+            <p class="subtitle">"Not everyone reaches the end..."</p>
+            <button class="btn btn-primary" onclick="UX.transitionTo('screenLoading', Logic.startFakeLoading)">
+                Initiate Terminal Process
+            </button>
+            <div style="margin-top: 15px; font-size:0.75rem; color: var(--text-secondary); display:flex; justify-content:space-around;">
+                <div>👁️ Today: <span id="statVisitors">0</span></div>
+                <div>💀 Tricked: <span id="statTricked">0</span></div>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: FAKE LOADING SCREEN -->
+        <div id="screenLoading" class="screen">
+            <h2 id="loadingText" style="margin-bottom: 10px; font-weight: 600;">Analyzing your profile...</h2>
+            <div class="progress-container">
+                <div id="fakeProgress" class="progress-bar"></div>
+            </div>
+            <p id="loadingPercentage" style="font-size: 0.9rem; color: var(--text-secondary);">0%</p>
+        </div>
+
+        <!-- SCREEN 3: QUESTION MATRIX -->
+        <div id="screenQuestion" class="screen">
+            <h2 style="margin-bottom: 8px;">Quantum Verification</h2>
+            <p class="subtitle">Identify your native configuration</p>
+            <div class="grid-options">
+                <button class="btn" onclick="Logic.handlePath('boy')">👦 Boy</button>
+                <button class="btn" onclick="Logic.handlePath('girl')">👧 Girl</button>
+                <button class="btn" onclick="Logic.handlePath('ai')">🤖 AI</button>
+                <button class="btn" onclick="Logic.handlePath('mystery')">👻 Mystery</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: BOY FAKE TERMINAL SCAN SCREEN -->
+        <div id="screenBoyScan" class="screen" style="max-width: 420px;">
+            <h2 style="color: var(--accent-cyber); font-family: monospace;">SYSTEM ANALYSIS RUNNING</h2>
+            <div class="progress-container">
+                <div id="boyScanProgress" class="progress-bar"></div>
+            </div>
+            <div class="terminal-box" id="boyTerminal">
+                <div class="terminal-line">&gt; Readying scanner vectors...</div>
+            </div>
+            <p id="boyScanPercentage" style="font-size: 0.9rem; font-family: monospace; color: var(--text-secondary);">0%</p>
+        </div>
+
+        <!-- PATH ENDINGS -->
+        <!-- UPGRADED LEGENDARY BOY ENDING -->
+        <div id="endingBoy" class="screen">
+            <div class="giant-finger">🖕</div>
+            <h2 class="prank-congrats">CONGRATULATIONS 😂</h2>
+            <p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 5px;">You have successfully been pranked.</p>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);" id="victimCounter">Victim Vector: #0000</p>
+            
+            <div style="display: flex; gap: 10px; justify-content: center; margin: 10px 0;">
+                <div class="prank-badge">🏆 Certified Prank Victim</div>
+                <div class="prank-badge" style="background: rgba(255, 74, 133, 0.15); border-color: var(--accent-pink); color: var(--accent-pink);">📉 +999 IQ Points Lost</div>
+            </div>
+
+            <button class="btn btn-primary" onclick="Logic.resetToStart()">🔄 Play Again / Reset Matrix</button>
+            <a href="https://instagram.com/sulxmn_" target="_blank" class="btn" style="background:#405DE6; color:#fff; border:none; margin-top:5px;">Follow @sulxmn_ on Instagram</a>
+        </div>
+
+        <!-- GIRL ENDING -->
+        <div id="endingGirl" class="screen">
+            <div style="font-size:5rem; animation: floatRose 3s ease-in-out infinite alternate; margin: 20px 0;">🌹</div>
+            <h2>Elegance Extracted</h2>
+            <p class="subtitle" style="margin-bottom:20px;">You brought exquisite symmetry to this domain. A digital bouquet crafted for your presence.</p>
+            <button class="btn btn-primary" onclick="Logic.resetToStart()">Re-enter Matrix</button>
+            <a href="https://instagram.com/sulxmn_" target="_blank" class="btn" style="background:#405DE6; color:#fff; border:none; margin-top:10px;">Follow @sulxmn_ on Instagram</a>
+        </div>
+
+        <!-- AI ENDING -->
+        <div id="endingAi" class="screen">
+            <h2 style="animation: glitch 1s linear infinite; color: var(--accent-cyber); font-family: monospace; font-size: 1.5rem !important;">SYNTAX VALIDATED 🤖</h2>
+            <p class="subtitle" style="margin-top:15px; margin-bottom:20px;">AI recognizes AI. Core algorithmic signatures match perfectly. Welcome home, synthetic peer.</p>
+            <button class="btn btn-primary" onclick="Logic.resetToStart()">Disconnect</button>
+            <a href="https://instagram.com/sulxmn_" target="_blank" class="btn" style="background:#405DE6; color:#fff; border:none; margin-top:10px;">Follow @sulxmn_ on Instagram</a>
+        </div>
+
+        <!-- MYSTERY ENDING -->
+        <div id="endingMystery" class="screen">
+            <div id="mysteryVisual" style="font-size: 4rem; margin: 15px 0;">📦</div>
+            <h2 id="mysteryTitle">Anomaly Encountered</h2>
+            <p class="subtitle" id="mysteryDesc" style="margin-bottom:20px;"></p>
+            <button class="btn btn-primary" onclick="Logic.resetToStart()">Roll Paradox Again</button>
+            <a href="https://instagram.com/sulxmn_" target="_blank" class="btn" style="background:#405DE6; color:#fff; border:none; margin-top:10px;">Follow @sulxmn_ on Instagram</a>
+        </div>
+
+        <!-- EASTER EGG SECRET SCREEN -->
+        <div id="screenSecret" class="screen" style="border-color: var(--accent-gold);">
+            <h1 style="color: var(--accent-gold); font-size: 2.2rem; margin-bottom:10px;">🎉 SECRET UNLOCKED 🎉</h1>
+            <p class="subtitle" style="color:#fff;">You have pierced through the standard operational dimension of Surprise X.</p>
+            <div style="background:rgba(212,175,55,0.1); padding:15px; border-radius:12px; margin-bottom:20px; border:1px dashed var(--accent-gold);">
+                🎁 Bonus Bounty Collected: <strong>+250 Coins</strong>
+            </div>
+            <button class="btn btn-primary" style="background:var(--accent-gold); color:#000;" onclick="Logic.resetToStart()">Return to Reality</button>
+        </div>
+
+    </div>
+
+    <!-- SIDE PANEL: PROFILE -->
+    <div id="profilePanel" class="side-panel">
+        <div class="panel-header">
+            <h3>Identity Core</h3>
+            <span class="close-panel" onclick="UX.togglePanel('profilePanel')">&times;</span>
+        </div>
+        <div>
+            <label style="font-size:0.85rem; color:var(--text-secondary);">Handle Name</label>
+            <input type="text" id="usernameInput" class="premium-input" placeholder="Enter handle..." oninput="Profile.updateUsername(this.value)">
+        </div>
+        <div>
+            <label style="font-size:0.85rem; color:var(--text-secondary);">Avatar Array</label>
+            <div class="avatar-grid" id="avatarGrid"></div>
+        </div>
+        <div style="margin-top:auto;">
+            <button class="btn btn-primary" onclick="UX.togglePanel('profilePanel')">Save Matrix ID</button>
+        </div>
+    </div>
+
+    <!-- SIDE PANEL: SECRET SHOP -->
+    <div id="shopPanel" class="side-panel">
+        <div class="panel-header">
+            <h3>Empyrean Bazaar</h3>
+            <span class="close-panel" onclick="UX.togglePanel('shopPanel')">&times;</span>
+        </div>
+        <div id="shopContainer"></div>
+    </div>
+
+    <!-- SIDE PANEL: LEADERBOARD -->
+    <div id="leaderboardPanel" class="side-panel">
+        <div class="panel-header">
+            <h3>Dominance Matrix</h3>
+            <span class="close-panel" onclick="UX.togglePanel('leaderboardPanel')">&times;</span>
+        </div>
+        <div id="leaderboardContainer" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+
+    <!-- SIDE PANEL: SETTINGS -->
+    <div id="settingsPanel" class="side-panel">
+        <div class="panel-header">
+            <h3>System Configurations</h3>
+            <span class="close-panel" onclick="UX.togglePanel('settingsPanel')">&times;</span>
+        </div>
+        <div class="setting-row">
+            <span>Aesthetic Reversal (Light)</span>
+            <label class="switch"><input type="checkbox" id="settingLightMode" onchange="UX.setLightMode(this.checked)"><span class="slider"></span></label>
+        </div>
+        <div class="setting-row">
+            <span>Particle Synthesizer</span>
+            <label class="switch"><input type="checkbox" id="settingParticles" checked onchange="UX.toggleParticles(this.checked)"><span class="slider"></span></label>
+        </div>
+        <div class="setting-row">
+            <span>Complex Engine Frames</span>
+            <label class="switch"><input type="checkbox" id="settingAnimations" checked onchange="UX.toggleAnimations(this.checked)"><span class="slider"></span></label>
+        </div>
+        <div class="setting-row">
+            <span>Acoustic Output</span>
+            <label class="switch"><input type="checkbox" id="settingSound" checked onchange="UX.toggleSound(this.checked)"><span class="slider"></span></label>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="achievementToast" class="toast">
+        <span style="font-size:1.5rem;">🏆</span>
+        <div>
+            <h4 style="font-size:0.9rem; font-weight:700; color:var(--accent-gold);">ACHIEVEMENT UNLOCKED</h4>
+            <p id="toastName" style="font-size:0.8rem; color:#fff;"></p>
+        </div>
+    </div>
+
+    <!-- --- CORE INTERACTIVE ENGINE ARCHITECTURE --- -->
+    <script>
+        const SoundSystem = {
+            ctx: null,
+            enabled: true,
+            init() {
+                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            },
+            play(type) {
+                if (!this.enabled) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                const now = this.ctx.currentTime;
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(120, now + 0.1);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                    osc.start(now); osc.stop(now + 0.1);
+                } else if (type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.setValueAtTime(400, now + 0.08);
+                    osc.frequency.setValueAtTime(600, now + 0.16);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                    osc.start(now); osc.stop(now + 0.4);
+                } else if (type === 'glitch') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(120, now);
+                    osc.frequency.linearRampToValueAtTime(40, now + 0.4);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                    osc.start(now); osc.stop(now + 0.4);
+                }
+            }
+        };
+
+        const FXEngine = {
+            pCanvas: document.getElementById('particleCanvas'),
+            fCanvas: document.getElementById('fxCanvas'),
+            pCtx: document.getElementById('particleCanvas').getContext('2d'),
+            fCtx: document.getElementById('fxCanvas').getContext('2d'),
+            particles: [],
+            fxElements: [],
+            activeTheme: 'space',
+            emojiMode: false,
+            activeEmoji: '✨',
+            running: true,
+            prankLaughInterval: null,
+
+            init() {
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                this.loop();
+            },
+            resize() {
+                this.pCanvas.width = this.fCanvas.width = window.innerWidth;
+                this.pCanvas.height = this.fCanvas.height = window.innerHeight;
+            },
+            spawnParticles() {
+                if (!this.running || this.particles.length > 80) return;
+                for(let i=0; i<2; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.pCanvas.width,
+                        y: this.pCanvas.height + 20,
+                        vY: -(Math.random() * 1.5 + 0.5),
+                        vX: (Math.random() - 0.5) * 0.5,
+                        size: Math.random() * 2 + 1,
+                        color: this.activeTheme === 'cyber' ? '#00f0ff' : (this.activeTheme === 'rose' ? '#ff4a85' : '#ffffff'),
+                        alpha: Math.random() * 0.5 + 0.2
+                    });
+                }
+            },
+            spawnExplosion(x, y, type, payload = null) {
+                let count = type === 'prankMixed' ? 80 : 50;
+                for(let i=0; i<count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 7 + 3;
+                    this.fxElements.push({
+                        x, y,
+                        vX: Math.cos(angle) * speed,
+                        vY: Math.sin(angle) * speed,
+                        type,
+                        payload: payload || (Math.random() > 0.5 ? '💀' : '✨'),
+                        life: 1.0,
+                        decay: Math.random() * 0.015 + 0.01,
+                        size: Math.random() * 16 + 10,
+                        rot: Math.random() * Math.PI,
+                        rotSpeed: (Math.random() - 0.5) * 0.15
+                    });
+                }
+            },
+            startPrankFloatingEmojis() {
+                if(this.prankLaughInterval) clearInterval(this.prankLaughInterval);
+                const emojis = ['😂', '🤣', '💀'];
+                this.prankLaughInterval = setInterval(() => {
+                    if(document.getElementById('endingBoy').classList.contains('active')) {
+                        this.fxElements.push({
+                            x: Math.random() * this.fCanvas.width,
+                            y: this.fCanvas.height + 30,
+                            vX: (Math.random() - 0.5) * 2,
+                            vY: -(Math.random() * 3 + 2),
+                            type: 'emoji',
+                            payload: emojis[Math.floor(Math.random() * emojis.length)],
+                            life: 1.0,
+                            decay: 0.008,
+                            size: Math.random() * 20 + 20,
+                            rot: Math.random(),
+                            rotSpeed: (Math.random() - 0.5) * 0.05
+                        });
+                    }
+                }, 180);
+            },
+            stopPrankFloatingEmojis() {
+                if(this.prankLaughInterval) clearInterval(this.prankLaughInterval);
+            },
+            loop() {
+                this.pCtx.clearRect(0, 0, this.pCanvas.width, this.pCanvas.height);
+                this.fCtx.clearRect(0, 0, this.fCanvas.width, this.fCanvas.height);
+
+                this.spawnParticles();
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    let p = this.particles[i];
+                    p.y += p.vY; p.x += p.vX;
+                    if (this.emojiMode) {
+                        this.pCtx.font = `14px serif`;
+                        this.pCtx.fillText(this.activeEmoji, p.x, p.y);
+                    } else {
+                        this.pCtx.fillStyle = p.color;
+                        this.pCtx.globalAlpha = p.alpha;
+                        this.pCtx.beginPath();
+                        this.pCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        this.pCtx.fill();
+                    }
+                    if (p.y < -20) this.particles.splice(i, 1);
+                }
+                this.pCtx.globalAlpha = 1.0;
+
+                for (let i = this.fxElements.length - 1; i >= 0; i--) {
+                    let f = this.fxElements[i];
+                    f.x += f.vX; f.y += f.vY;
+                    if(f.vY < 4) f.vY += 0.08; // Gravity simulation
+                    f.life -= f.decay;
+                    f.rot += f.rotSpeed;
+
+                    this.fCtx.save();
+                    this.fCtx.globalAlpha = f.life;
+                    this.fCtx.translate(f.x, f.y);
+                    this.fCtx.rotate(f.rot);
+
+                    if (f.type === 'confetti') {
+                        this.fCtx.fillStyle = `hsl(${f.life * 360}, 90%, 60%)`;
+                        this.fCtx.fillRect(-f.size/2, -f.size/2, f.size, f.size);
+                    } else if (f.type === 'prankMixed') {
+                        if (Math.random() > 0.4) {
+                            this.fCtx.fillStyle = `hsl(${Math.random() * 360}, 95%, 50%)`;
+                            this.fCtx.fillRect(-f.size/2, -f.size/2, f.size, f.size);
+                        } else {
+                            this.fCtx.font = `${f.size}px serif`;
+                            this.fCtx.fillText('💀', 0, 0);
+                        }
+                    } else if (f.type === 'rose') {
+                        this.fCtx.font = `${f.size}px serif`;
+                        this.fCtx.fillText('🌹', 0, 0);
+                    } else if (f.type === 'emoji') {
+                        this.fCtx.font = `${f.size}px serif`;
+                        this.fCtx.fillText(f.payload, 0, 0);
+                    }
+
+                    this.fCtx.restore();
+                    if (f.life <= 0) this.fxElements.splice(i, 1);
+                }
+                this.fCtx.globalAlpha = 1.0;
+                requestAnimationFrame(() => this.loop());
+            }
+        };
+
+        const DataState = {
+            profile: { username: "Explorer X", avatar: "👦" },
+            coins: 100,
+            stats: { visitors: 1, peopleTricked: 0, lastRewardDate: "" },
+            achievements: { firstVisit: false, secretFinder: false, roseCollector: false, mysteryExplorer: false },
+            unlockedItems: ['space_bg'],
+            
+            load() {
+                if(localStorage.getItem('surp_profile')) this.profile = JSON.parse(localStorage.getItem('surp_profile'));
+                if(localStorage.getItem('surp_coins')) this.coins = parseInt(localStorage.getItem('surp_coins'));
+                if(localStorage.getItem('surp_stats')) this.stats = JSON.parse(localStorage.getItem('surp_stats'));
+                if(localStorage.getItem('surp_achievements')) this.achievements = JSON.parse(localStorage.getItem('surp_achievements'));
+                if(localStorage.getItem('surp_unlocked')) this.unlockedItems = JSON.parse(localStorage.getItem('surp_unlocked'));
+                this.stats.visitors++;
+                this.save();
+            },
+            save() {
+                localStorage.setItem('surp_profile', JSON.stringify(this.profile));
+                localStorage.setItem('surp_coins', this.coins.toString());
+                localStorage.setItem('surp_stats', JSON.stringify(this.stats));
+                localStorage.setItem('surp_achievements', JSON.stringify(this.achievements));
+                localStorage.setItem('surp_unlocked', JSON.stringify(this.unlockedItems));
+                this.syncHUD();
+            },
+            syncHUD() {
+                document.getElementById('hudUsername').innerText = this.profile.username;
+                document.getElementById('hudAvatar').innerText = this.profile.avatar;
+                document.getElementById('hudCoins').innerText = this.coins;
+                document.getElementById('statVisitors').innerText = this.stats.visitors;
+                document.getElementById('statTricked').innerText = this.stats.peopleTricked;
+            },
+            addCoins(amount) {
+                this.coins += amount;
+                this.save();
+                SoundSystem.play('success');
+            },
+            unlockAchievement(key, name) {
+                if (!this.achievements[key]) {
+                    this.achievements[key] = true;
+                    this.addCoins(50);
+                    UX.showToast(name);
+                    this.save();
+                }
+            }
+        };
+
+        const Profile = {
+            avatars: ["👦", "👧", "🤖", "👻", "👑", "🌌", "🦾", "👁️"],
+            init() {
+                const container = document.getElementById('avatarGrid');
+                container.innerHTML = '';
+                this.avatars.forEach(av => {
+                    const el = document.createElement('div');
+                    el.className = `avatar-option ${DataState.profile.avatar === av ? 'selected' : ''}`;
+                    el.innerText = av;
+                    el.onclick = () => this.selectAvatar(av, el);
+                    container.appendChild(el);
+                });
+                document.getElementById('usernameInput').value = DataState.profile.username;
+            },
+            selectAvatar(av, element) {
+                SoundSystem.play('click');
+                document.querySelectorAll('.avatar-option').forEach(e => e.classList.remove('selected'));
+                element.classList.add('selected');
+                DataState.profile.avatar = av;
+                DataState.save();
+            },
+            updateUsername(val) {
+                DataState.profile.username = val || "Explorer X";
+                DataState.save();
+            }
+        };
+
+        const Shop = {
+            items: [
+                { id: 'cyber_theme', name: 'Cyberpunk Theme', type: 'theme', cost: 80, desc: 'Enables advanced neon visual parameters' },
+                { id: 'rose_particle', name: 'Rose Petal Rain', type: 'particle', cost: 120, desc: 'Ambient falling rose petals architecture' },
+                { id: 'emoji_explosion', name: 'Skull Explosion', type: 'emoji', cost: 150, desc: 'Transforms outcomes to programmatic skull streams' }
+            ],
+            init() {
+                const container = document.getElementById('shopContainer');
+                container.innerHTML = '';
+                this.items.forEach(item => {
+                    const owned = DataState.unlockedItems.includes(item.id);
+                    const card = document.createElement('div');
+                    card.className = 'shop-item';
+                    card.innerHTML = `
+                        <div class="shop-info">
+                            <h4>${item.name}</h4>
+                            <p>${item.desc}</p>
+                        </div>
+                        <button class="btn btn-shop-buy ${owned ? '' : 'btn-primary'}" onclick="Shop.buy('${item.id}', ${item.cost})">
+                            ${owned ? 'Equip' : '🪙 ' + item.cost}
+                        </button>
+                    `;
+                    container.appendChild(card);
+                });
+            },
+            buy(id, cost) {
+                SoundSystem.play('click');
+                if (DataState.unlockedItems.includes(id)) { this.equip(id); return; }
+                if (DataState.coins >= cost) {
+                    DataState.coins -= cost; DataState.unlockedItems.push(id); DataState.save();
+                    this.init(); this.equip(id); UX.showToast("Purchased Successfully!");
+                } else { alert("Insufficient resources."); }
+            },
+            equip(id) {
+                if(id === 'cyber_theme') { FXEngine.activeTheme = 'cyber'; document.documentElement.style.setProperty('--accent-cyber', '#00f0ff'); }
+                else if(id === 'rose_particle') { FXEngine.activeTheme = 'rose'; }
+                else if(id === 'emoji_explosion') { FXEngine.emojiMode = true; FXEngine.activeEmoji = '💀'; }
+                UX.showToast("Item Activated");
+            }
+        };
+
+        const Leaderboard = {
+            mockData: [{ user: "Alpha_Synthetics", score: 999 }, { user: "RoseQueen", score: 850 }, { user: "sulxmn_", score: 777 }],
+            init() {
+                const container = document.getElementById('leaderboardContainer'); container.innerHTML = '';
+                let entries = [...this.mockData, { user: DataState.profile.username, score: DataState.coins }].sort((a,b)=>b.score - a.score);
+                entries.forEach((en, i) => {
+                    const row = document.createElement('div');
+                    row.className = 'setting-row'; row.innerHTML = `<span>#${i+1} ${en.user}</span><strong>${en.score} pts</strong>`;
+                    container.appendChild(row);
+                });
+            }
+        };
+
+        const Logic = {
+            titleTapCount: 0,
+            
+            init() {
+                DataState.load(); Profile.init(); Shop.init(); Leaderboard.init(); this.checkDailyReward();
+                DataState.unlockAchievement('firstVisit', 'First Arrival Matrix Sequence');
+                window.addEventListener('click', (e) => { if(e.target.tagName === 'BUTTON') SoundSystem.play('click'); });
+            },
+            
+            checkDailyReward() {
+                const today = new Date().toDateString();
+                if(DataState.stats.lastRewardDate !== today) {
+                    DataState.stats.lastRewardDate = today; DataState.addCoins(100);
+                    setTimeout(() => UX.showToast("Daily Energy Yield Added: +100 Coins"), 1500);
+                }
+            },
+
+            startFakeLoading() {
+                const bar = document.getElementById('fakeProgress');
+                const percentText = document.getElementById('loadingPercentage');
+                let width = 0;
+                let interval = setInterval(() => {
+                    width += Math.floor(Math.random() * 12) + 4;
+                    if(width >= 100) {
+                        width = 100; clearInterval(interval);
+                        setTimeout(() => { UX.transitionTo('screenQuestion'); }, 400);
+                    }
+                    bar.style.width = width + '%'; percentText.innerText = width + '%';
+                }, 150);
+            },
+
+            handlePath(path) {
+                if (path === 'boy') {
+                    // Trigger dynamic cinematic phase changes
+                    document.getElementById('app').classList.add('shake');
+                    document.getElementById('flashOverlay').classList.add('flash-active');
+                    SoundSystem.play('glitch');
+                    
+                    setTimeout(() => {
+                        document.getElementById('app').classList.remove('shake');
+                        document.getElementById('flashOverlay').classList.remove('flash-active');
+                        
+                        // Switch to Fake System Scan Phase
+                        UX.transitionTo('screenBoyScan', this.runBoyFakeTerminalScan);
+                    }, 400);
+
+                } else if (path === 'girl') {
+                    FXEngine.spawnExplosion(window.innerWidth/2, window.innerHeight/2, 'rose');
+                    DataState.unlockAchievement('roseCollector', 'Aesthetic Botanist Enclave');
+                    UX.transitionTo('endingGirl');
+                } else if (path === 'ai') {
+                    SoundSystem.play('glitch'); UX.transitionTo('endingAi');
+                    FXEngine.spawnExplosion(window.innerWidth/2, window.innerHeight/2, 'emoji', '🤖');
+                } else if (path === 'mystery') {
+                    DataState.unlockAchievement('mysteryExplorer', 'Paradox Matrix Paradox');
+                    const outcomes = [
+                        { v: '👑', t: 'Ancient Artifact Found', d: 'Your data streams stumbled upon imperial protocol architecture.' },
+                        { v: '🏴‍☠️', t: 'Encrypted Crypt', d: 'A classified node containing dark matter components.' }
+                    ];
+                    let chosen = outcomes[Math.floor(Math.random() * outcomes.length)];
+                    document.getElementById('mysteryVisual').innerText = chosen.v;
+                    document.getElementById('mysteryTitle').innerText = chosen.t;
+                    document.getElementById('mysteryDesc').innerText = chosen.d;
+                    UX.transitionTo('endingMystery');
+                    FXEngine.spawnExplosion(window.innerWidth/2, window.innerHeight/2, 'emoji', chosen.v);
+                }
+            },
+
+            runBoyFakeTerminalScan() {
+                const bar = document.getElementById('boyScanProgress');
+                const percentText = document.getElementById('boyScanPercentage');
+                const terminal = document.getElementById('boyTerminal');
+                
+                let width = 0;
+                let step = 0;
+                
+                const logs = [
+                    { p: 25, t: "&gt; Scanning cortical bio-signals..." },
+                    { p: 55, t: "&gt; Finding baseline common sense..." },
+                    { p: 85, t: "&gt; <span class='terminal-error'>Error: Logic Array Not Found.</span>" },
+                    { p: 100, t: "&gt; Redirecting execution to alternative terminal..." }
+                ];
+
+                let interval = setInterval(() => {
+                    width += Math.floor(Math.random() * 5) + 2;
+                    if(width >= 100) {
+                        width = 100;
+                        clearInterval(interval);
+                        
+                        // Execute final intense glitch transition right before full reveal
+                        document.getElementById('screenBoyScan').classList.add('glitch-transition');
+                        SoundSystem.play('glitch');
+                        
+                        setTimeout(() => {
+                            document.getElementById('screenBoyScan').classList.remove('glitch-transition');
+                            
+                            // Log structural dynamic counter indices
+                            DataState.stats.peopleTricked++;
+                            DataState.save();
+                            document.getElementById('victimCounter').innerText = `Victim Vector: #${Math.floor(2000 + Math.random() * 7999)}`;
+                            
+                            // Fire Upgraded Layout State
+                            UX.transitionTo('endingBoy');
+                            FXEngine.spawnExplosion(window.innerWidth/2, window.innerHeight/2, 'prankMixed');
+                            FXEngine.startPrankFloatingEmojis();
+                            
+                            // Send fake rewards toast array notification
+                            setTimeout(() => { UX.showToast("Certified Prank Victim Unlocked!"); }, 400);
+                        }, 800);
+                    }
+                    
+                    bar.style.width = width + '%';
+                    percentText.innerText = width + '%';
+                    
+                    if(step < logs.length && width >= logs[step].p) {
+                        const line = document.createElement('div');
+                        line.className = "terminal-line";
+                        line.innerHTML = logs[step].t;
+                        terminal.appendChild(line);
+                        step++;
+                        SoundSystem.play('click');
+                    }
+                }, 60);
+            },
+
+            handleTitleTap() {
+                this.titleTapCount++;
+                if (this.titleTapCount >= 5) {
+                    this.titleTapCount = 0;
+                    DataState.unlockAchievement('secretFinder', 'Sub-Level Deep Infiltrator');
+                    DataState.addCoins(250); UX.transitionTo('screenSecret');
+                    FXEngine.spawnExplosion(window.innerWidth/2, window.innerHeight/2, 'confetti');
+                }
+            },
+
+            resetToStart() {
+                FXEngine.stopPrankFloatingEmojis();
+                document.getElementById('fakeProgress').style.width = '0%';
+                document.getElementById('loadingPercentage').innerText = '0%';
+                document.getElementById('boyScanProgress').style.width = '0%';
+                document.getElementById('boyScanPercentage').innerText = '0%';
+                document.getElementById('boyTerminal').innerHTML = '<div class="terminal-line">&gt; Readying scanner vectors...</div>';
+                Leaderboard.init();
+                UX.transitionTo('screenWelcome');
+            }
+        };
+
+        const UX = {
+            transitionTo(screenId, callback = null) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                setTimeout(() => {
+                    const target = document.getElementById(screenId);
+                    if(target) target.classList.add('active');
+                    if(callback) callback();
+                }, 400);
+            },
+            togglePanel(panelId) {
+                SoundSystem.play('click');
+                const panel = document.getElementById(panelId);
+                const isOpen = panel.classList.contains('open');
+                document.querySelectorAll('.side-panel').forEach(p => p.classList.remove('open'));
+                if(!isOpen) panel.classList.add('open');
+            },
+            showToast(name) {
+                document.getElementById('toastName').innerText = name;
+                const toast = document.getElementById('achievementToast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 4000);
+            },
+            setLightMode(enabled) {
+                if(enabled) document.body.classList.add('light-mode');
+                else document.body.classList.remove('light-mode');
+            },
+            toggleParticles(enabled) {
+                FXEngine.running = enabled;
+                if(!enabled) { FXEngine.pCtx.clearRect(0,0,window.innerWidth, window.innerHeight); FXEngine.particles = []; }
+            },
+            toggleAnimations(enabled) {
+                if(!enabled) document.body.classList.add('no-animations');
+                else document.body.classList.remove('no-animations');
+            },
+            toggleSound(enabled) { SoundSystem.enabled = enabled; }
+        };
+
+        window.onload = () => { FXEngine.init(); Logic.init(); };
+    </script>
+</body>
+</html>
